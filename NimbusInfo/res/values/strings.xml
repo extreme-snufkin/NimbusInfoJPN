@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+ Nimbus Info
+ Copyright (C) 2012  Tohru Mashiko
+ <a href="http://www.opensource.org/licenses/mit-license.php">The MIT License</a>
+ -->
+<resources>
+	<!-- Message Setting Infomation -->
+	<!-- Application Name -->
+	<string name="app_name">Nimbus Info（JPN）</string>
+	<!-- Button Name(Common) -->
+	<string name="yes_btn">はい</string>
+	<string name="no_btn">いいえ</string>
+	<!-- Message(Common) -->
+	<string name="load_msg">データ読込中</string>
+	<string name="mes1_dialog">アプリケーション終了</string>
+	<string name="mes2_dialog">アプリケーションを終了します。\nよろしいですか？</string>
+	<!-- Error Code(Common) -->
+	<string name="network_if_err1">起動時エラー</string>
+	<string name="network_if_err2">ネットワークが有効になっていない為、アプリケーションを終了します。</string>
+</resources>

@@ -1,0 +1,167 @@
+<!-- 
+	　Title   : Nimbus Info(JPN)
+	 Version : 1.0 (2012/11/20)
+	 Author  : Tohru Mashiko
+	 License : Copyright (c) 2012 Tohru Mashiko
+			<a href="http://www.opensource.org/licenses/mit-license.php">The MIT License</a>
+ -->
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Nimbus Info(JPN)</title>
+<style type="text/css">
+html, body {
+	width:100%; height:100%;
+}
+html, body, div{
+	margin:0; padding:0;
+}
+div#label{
+	z-index:2;
+	padding:8px;
+	overflow:hidden;
+	color: #fff;
+	background-color: #000;
+	background-image: -webkit-gradient(
+		linear,
+		0% 0%,
+		0% 100%,
+		from(rgba(155, 155, 155, 0.1)),
+		to(rgba(255, 255, 255, 0.5)),
+		color-stop(.5,rgba(155, 155, 155, 0.2)),
+		color-stop(.5,rgba(255, 255, 255, 0.1))
+	);
+	border-radius: 8px;
+	opacity: .7;
+}
+div#title{
+	font-size:10pt;
+	font-weight:bold;
+	line-height:1.2em;
+	width:100%;
+	overflow:hidden;
+}
+div#lat, div#lon{
+	font-size:10pt;
+	font-weight:normal;
+	line-height:10pt;
+	overflow:hidden;
+}
+div#credit{
+	font-size:10pt;
+	font-weight:bold;
+	line-height:10pt;
+	overflow:hidden;
+}
+</style>
+<script src="http://js.api.olp.yahooapis.jp/OpenLocalPlatform/V1/jsapi?appid=YourApplicationId"></script>
+<script src="http://code.jquery.com/jquery-1.8.3.min.js"></script>
+<script>
+window.onload = function() {
+	//Android WebViewバージョンチェック
+	var osCheck = false;
+	if (navigator.userAgent.indexOf('Android 4.2') > 1 || navigator.userAgent.indexOf('Android 4.1') > 1) {
+		osCheck = true;
+	}
+	//地図表示
+	var map = new Y.Map('map', {
+		configure : {
+			weatherOverlay: true,
+			mapType: Y.Map.TYPE.SMARTPHONE
+		}
+	});
+	//天気レイヤ作成
+	var weather = new Y.WeatherMapLayer({
+		"opacity": 0.5,
+	});
+	//天気レイヤを重ねる通常地図レイヤを作成
+	var maplayer = new Y.NormalLayer();
+	//地図 + 天気レイヤを追加
+	map.addLayerSet("weather", new Y.LayerSet("地図+天気", [maplayer, weather]));
+	//デフォルトマップ設定
+	map.drawMap(new Y.LatLng(35.75127061813551, 139.7091644455718), 14, "weather");
+	//地図コントローラーを追加
+	var mapControl;
+	if (window.orientation === 0) {
+		//画面が縦向きの場合
+		mapControl = new Y.SliderZoomControlVertical();
+		if(osCheck == true) {
+			map.addControl(mapControl, new Y.ControlPosition(Y.ControlPosition.TOP_LEFT, new Y.Size(0, 45)));
+			//地図検索UI
+			var mapSearchControl = new Y.SearchControl();
+			map.addControl(mapSearchControl, new Y.ControlPosition(Y.ControlPosition.TOP_RIGHT, new Y.Size(0, 0)));
+		} else {
+			map.addControl(mapControl, new Y.ControlPosition(Y.ControlPosition.TOP_LEFT, new Y.Size(0, 0)));
+		}
+	} else {
+		//画面が横向きの場合
+		mapControl = new Y.SliderZoomControlHorizontal();
+		map.addControl(mapControl);
+		if(osCheck == true) {
+			//地図検索UI
+			var mapSearchControl = new Y.SearchControl();
+			map.addControl(mapSearchControl, new Y.ControlPosition(Y.ControlPosition.TOP_RIGHT, new Y.Size(0, 0)));
+		}
+	}
+	map.addControl(new Y.ScaleControl());
+	//天気データを更新
+	weather.UpdateWeather();
+	//雨雲レーダー情報の日付を表示
+	weather.setDispTime(true);
+	if(osCheck == true) {
+		weather.setTimePosition(new Y.ControlPosition(Y.ControlPosition.TOP_RIGHT, new Y.Size(0, 45)));
+	} else {
+		weather.setTimePosition(new Y.ControlPosition(Y.ControlPosition.TOP_RIGHT, new Y.Size(0, 0)));
+	}
+	//5分間毎に自動更新するように設定
+	weather.setAutoUpdateInterval(5);
+	//自動更新スタート
+	weather.startAutoUpdate();
+	//Geolocation APIを使って現在地取得
+	var presentLocation = new Y.LatLng(35.75127061813551, 139.7091644455718);
+	if (navigator.geolocation) {
+		navigator.geolocation.getCurrentPosition(function(pos) {
+			presentLocation = new Y.LatLng(pos.coords.latitude, pos.coords.longitude);
+			map.panTo(presentLocation);
+			$('#lat').text('緯度：' + presentLocation.lat());
+			$('#lon').text('経度：' + presentLocation.lng());
+		}, null, {
+			enableHighAccuracy: true, timeout: 3000, maximumAge: 0
+		});
+	} else {
+		map.panTo(presentLocation);
+		$('#lat').text('緯度：' + presentLocation.lat());
+		$('#lon').text('経度：' + presentLocation.lng());
+	}
+	//位置情報の変更は地図をタップして設定
+	map.bind('click', function(pos) {
+		//現在地を取得
+		map.panTo(pos);
+		$('#lat').text('緯度：' + pos.lat());
+		$('#lon').text('経度：' + pos.lng());
+	});
+	//リサイズ(回転)時に地図更新
+	$(window).resize(function() {
+		map.updateSize();
+	});
+};
+</script>
+</head>
+<body>
+	<div id="map" style="width:100%; height:100%;"></div>
+	<div id="label" style="position:absolute; bottom:4px; left:4px;">
+		<div id="title">Nimbus Info（JPN）</div>
+		<div id="lat">緯度：未取得</div>
+		<div id="lon">経度：未取得</div>
+		<div id="credit">
+			<!-- Begin Yahoo! JAPAN Web Services Attribution Snippet -->
+			<a href="http://developer.yahoo.co.jp/about">
+			<img src="http://i.yimg.jp/images/yjdn/yjdn_attbtn1_125_17.gif" title="Webサービス by Yahoo! JAPAN" alt="Web Services by Yahoo! JAPAN" width="125" height="17" border="0" style="margin:15px 15px 15px 15px"></a>
+			<!-- End Yahoo! JAPAN Web Services Attribution Snippet -->
+		</div>
+	</div>
+</body>
+</html>
